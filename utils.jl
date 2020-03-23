@@ -138,7 +138,7 @@ function iterate(s::StateTransitionDataset, state = 1)
         state = 1
         
     end
-end
+
     state += 1
     
     return ((obs, action, next_obs), state)
