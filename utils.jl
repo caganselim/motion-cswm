@@ -67,11 +67,11 @@ end
 function toOneHot(idxs, dim)
     
     batch_size = length(idxs)
-    hot_matrix = zeros(batch_size,dim)
+    hot_matrix = zeros(dim,batch_size)
     
     for i in 1:batch_size
         
-        hot_matrix[i,idxs[i]] = 1.0
+        hot_matrix[idxs[i],i] = 1.0
         
     end
     
