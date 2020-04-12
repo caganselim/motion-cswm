@@ -12,7 +12,7 @@ function unsorted_segment_sum(tensor, segment_ids, num_segments)
     # tensor =>  (512, 2000)
     # segment_ids => (2000)
     # num_segments = 500
-    # result => (512,500)
+    # results => (512,500)
     
     #Allocate the result container
     result_shape = (size(tensor,1), num_segments)
@@ -108,7 +108,7 @@ end
 
 function initNodeMLP(node_input_dim, hidden_dim, act_fn, input_dim)
     
-    weights = [param(hidden_dim,node_input_dim),param(hidden_dim, hidden_dim),param(input_dim,hidden_dim )]
+    weights = [param(hidden_dim,node_input_dim),param(hidden_dim, hidden_dim),param(input_dim,hidden_dim)]
     biases =  [param0(hidden_dim), param0(hidden_dim), param0(input_dim)]    
     layer_norm = LayerNorm(hidden_dim)
     
@@ -130,7 +130,7 @@ end
 function edge_model(edge_mlp, source, target)
     
     #Edge model
-    #Out: [2000,4] in 2D Shapes
+    #Out: [4,2000] in 2D Shapes
     out = vcat(source,target)
     return edge_mlp(out)
     
@@ -215,7 +215,6 @@ function (t_gnn::TransitionGNN)(states, action)
         # Only re-evaluate if necessary (e.g. if batch size changed).
         if t_gnn.edge_list == nothing || t_gnn.batch_size != batch_size
             
-            
             edge_index = get_edge_list_fully_connected(batch_size, num_nodes)
             t_gnn.edge_list = edge_index
             
@@ -242,28 +241,17 @@ function (t_gnn::TransitionGNN)(states, action)
               
         end
         
-        #??????
-        action_vec = reshape(action_vec, 4,500)
+        action_vec = reshape(action_vec, t_gnn.action_dim, batch_size*num_nodes)
         
-        #node_attr => ([500, 2])
-        #action_vec.shape => (500,4)
+        #node_attr => [embedding_dim, batch_size*num_nodes]
+        #action_vec.shape => [action_dim, batch_size*num_nodes]
         node_attr = vcat(node_attr, action_vec)
 
-    end 
+    end
     
+    #edge_attr => [512,2000]
     node_attr = node_model(t_gnn.node_mlp, node_attr , edge_index, edge_attr)
     
-    # [batch_size, num_nodes, hidden_dim]
-    #2,500
     return reshape(node_attr, t_gnn.embedding_dim ,num_nodes, batch_size ) # (2,5,100)
     
 end
-
-
-
-
-
-
-
-
-

@@ -99,7 +99,7 @@ function prepareBatch(s,idx_1, idx_2)
     minibatch_batch_size = size(minibatch,1)
     #print(minibatch_batch_size)
     
-    #Read
+    #Read   
     b_obs = zeros(50,50,3,minibatch_batch_size)
     b_next_obs = zeros(50,50,3,minibatch_batch_size)
     b_action = zeros(minibatch_batch_size)
