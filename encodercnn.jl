@@ -1,3 +1,5 @@
+using Knet;
+
 struct EncoderCNNSmall
    
     weights

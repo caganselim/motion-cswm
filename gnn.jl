@@ -1,3 +1,8 @@
+using Knet;
+
+#Datatype
+atype=KnetArray{Float32}
+
 function unsorted_segment_sum(tensor, segment_ids, num_segments)
     
     """
@@ -18,6 +23,7 @@ function unsorted_segment_sum(tensor, segment_ids, num_segments)
     result_shape = (size(tensor,1), num_segments)
     results = atype(zeros(result_shape))
     
+    
     for i=1:size(segment_ids,1)
         
         id = segment_ids[i]
@@ -26,6 +32,22 @@ function unsorted_segment_sum(tensor, segment_ids, num_segments)
     end    
     
     return results 
+    
+end
+
+function sorted_sum(tensor, batch_size, num_nodes)
+    
+    # tensor =>  (512, 2000)
+    # (512,4,500)
+    # results => (512,500)
+    
+    output_dim = size(tensor,1)
+    num_segments = batch_size*num_objects
+    
+    results = reshape(tensor, output_dim, num_nodes - 1, num_segments)
+    results = sum(results,dims=2)[:,1,:]
+    
+    return results
     
 end
 
@@ -156,6 +178,25 @@ function node_model(node_mlp, node_attr , edge_index, edge_attr)
     
 end
 
+function node_model_2(node_mlp, node_attr, edge_attr, batch_size, num_nodes)
+    
+    
+    if edge_attr == nothing
+        
+        out = node_attr
+        
+    else
+        
+        agg = sorted_sum(edge_attr, batch_size, num_nodes)
+        out = vcat(node_attr,agg)
+        
+    end
+    
+    return node_mlp(out)
+
+end
+
+
 mutable struct TransitionGNN
     """GNN-based transition model"""
     
@@ -250,7 +291,8 @@ function (t_gnn::TransitionGNN)(states, action)
     end
     
     #edge_attr => [512,2000]
-    node_attr = node_model(t_gnn.node_mlp, node_attr , edge_index, edge_attr)
+    #node_attr = node_model(t_gnn.node_mlp, node_attr , edge_index, edge_attr)
+    node_attr = node_model_2(t_gnn.node_mlp, node_attr, edge_attr, batch_size, num_nodes)
     
     return reshape(node_attr, t_gnn.embedding_dim ,num_nodes, batch_size ) # (2,5,100)
     

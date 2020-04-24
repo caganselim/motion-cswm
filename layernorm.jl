@@ -1,3 +1,5 @@
+using Knet;
+
 struct LayerNorm; a; b; ϵ; end
 
 function LayerNorm(dmodel; eps=1e-6)

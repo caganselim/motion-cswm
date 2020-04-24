@@ -1,3 +1,7 @@
+using Knet;
+
+include("layernorm.jl")
+
 struct EncoderMLP
     
     weights
