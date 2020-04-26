@@ -5,7 +5,8 @@ function unsorted_segment_sum(tensor, segment_ids, num_segments)
     
     """
     Replication of Tensorflow's unsorted_segment_sum in Julia
-    Needs avoidance of for loops for the future work
+    Needs avoidance of for loops & this code segment is also
+    AutoGrad incompatible. Kept for debugging purposes.
     Computes the sum along segments of a tensor 
     such that output[i] = j...data[j..] where the sum is over 
     tuples j... such that segment_ids[j..]  
@@ -182,7 +183,7 @@ function node_model_2(node_mlp, node_attr, edge_attr, batch_size, num_nodes)
         
     else
         
-        agg = sorted_sum(edge_attr, batch_size, num_nodes)
+        agg = sorted_sum(edge_attr, batch_size, num_nodes)        
         out = vcat(node_attr,agg)
         
     end
@@ -277,18 +278,20 @@ function (t_gnn::TransitionGNN)(states, action)
               
         end
         
+   
         action_vec = reshape(action_vec, t_gnn.action_dim, batch_size*num_nodes)
         
         #node_attr => [embedding_dim, batch_size*num_nodes]
         #action_vec.shape => [action_dim, batch_size*num_nodes]
-        node_attr = vcat(node_attr, action_vec)
 
+        node_attr = vcat(node_attr, action_vec)
+                
     end
     
     #edge_attr => [512,2000]
     #node_attr = node_model(t_gnn.node_mlp, node_attr , edge_index, edge_attr)
-    node_attr = node_model_2(t_gnn.node_mlp, node_attr, edge_attr, batch_size, num_nodes)
+    node_attr = node_model_2(t_gnn.node_mlp, node_attr, edge_attr, batch_size, num_nodes)    
     
-    return reshape(node_attr, t_gnn.embedding_dim ,num_nodes, batch_size ) # (2,5,100)
+    return reshape(node_attr, t_gnn.embedding_dim ,num_nodes, batch_size) # (2,5,100)
     
 end

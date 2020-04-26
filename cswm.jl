@@ -5,11 +5,11 @@ include("encodercnn.jl")
 include("encodermlp.jl")
 include("gnn.jl")
 
-function energy(transition_model, state, action, next_state, trans)
+function energy(transition_model, state, action, next_state, notrans)
     
     norm = 0.5 / (sigma^2)
     
-    if trans
+    if notrans
         
         diff = state - next_state
         
@@ -26,7 +26,6 @@ function energy(transition_model, state, action, next_state, trans)
     a  = norm*sum((diff.^2), dims=1)[1,:,:]
     res = mean(a,dims=1)[1,:]    
     return res
-    
     
 end
 
@@ -88,16 +87,16 @@ function (m::ContrastiveSWM)(obs,action,next_obs)
     
     # Sample negative state across episodes at random
     batch_size = size(obs,4)
-    perm = rand(1:batch_size)
+    perm = randperm(batch_size)
     neg_state = state[:,:,perm]
     
     # Pos loss
-    pos_loss = energy(m.gnn, state, action, next_state,true)
+    pos_loss = energy(m.gnn, state, action, next_state,false)
     zero_mat = atype(zeros(size(pos_loss)))
     pos_loss = mean(pos_loss)
     
     # Neg loss
-    neg_loss = max.(zero_mat, hinge .- energy(m.gnn, state, action,next_state,false))
+    neg_loss = max.(zero_mat, hinge .- energy(m.gnn, state, action,neg_state,true))
     neg_loss = mean(neg_loss)
 
     loss = pos_loss + neg_loss
