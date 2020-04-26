@@ -1,5 +1,3 @@
-using Knet;
-
 #Datatype
 atype=KnetArray{Float32}
 
@@ -86,8 +84,7 @@ function get_edge_list_fully_connected(batch_size, num_objects)
 
 end
 
-
-struct EdgeMLP
+mutable struct EdgeMLP
     
     weights
     biases
@@ -95,7 +92,6 @@ struct EdgeMLP
     act_fn
   
 end
-
 
 function initEdgeMLP(input_dim, hidden_dim, act_fn)
     
@@ -107,19 +103,18 @@ function initEdgeMLP(input_dim, hidden_dim, act_fn)
     
 end
 
-
 function (e_mlp::EdgeMLP)(x)
     
     x1 = e_mlp.act_fn.(e_mlp.weights[1] * x .+ e_mlp.biases[1])
     x2 = e_mlp.weights[2]* x1 .+ e_mlp.biases[2]
     x3 = e_mlp.act_fn.(e_mlp.layer_norm(x2))
-    x4 = e_mlp.act_fn.(e_mlp.weights[3]*x3 .+ e_mlp.biases[3])
+    x4 = e_mlp.weights[3]*x3 .+ e_mlp.biases[3]
     
     return x4
     
 end
 
-struct NodeMLP
+mutable struct NodeMLP
     
     weights
     biases
@@ -144,7 +139,7 @@ function (node_mlp::NodeMLP)(x)
     x1 = node_mlp.act_fn.(node_mlp.weights[1] * x .+ node_mlp.biases[1])
     x2 = node_mlp.weights[2]* x1 .+ node_mlp.biases[2]
     x3 = node_mlp.act_fn.(node_mlp.layer_norm(x2))
-    x4 = node_mlp.act_fn.(node_mlp.weights[3]*x3 .+ node_mlp.biases[3])
+    x4 = node_mlp.weights[3]*x3 .+ node_mlp.biases[3]
     
     return x4
 end
@@ -245,11 +240,10 @@ function (t_gnn::TransitionGNN)(states, action)
     batch_size = dimensions[3]
     
     # states: [batch_size (B), num_objects, embedding_dim]
-    # node_attr: Flatten states tensor to [B * num_objects, embedding_dim]
+    # node_attr: Flatten states tensor to [embedding_dim, B * num_objects]
     node_attr = reshape(states, t_gnn.embedding_dim,batch_size*num_nodes)
     
     edge_attr  = nothing
-    edge_index = nothing
     
     if num_nodes > 1
         
@@ -258,16 +252,17 @@ function (t_gnn::TransitionGNN)(states, action)
             
             edge_index = get_edge_list_fully_connected(batch_size, num_nodes)
             t_gnn.edge_list = edge_index
+            t_gnn.batch_size = batch_size
             
         end
 
-        row = edge_index[1,:]
-        col = edge_index[2,:]
+        row = t_gnn.edge_list[1,:]
+        col = t_gnn.edge_list[2,:]
 
         edge_attr = edge_model(t_gnn.edge_mlp,node_attr[:,row], node_attr[:,col])
         
     end
-    
+        
     #If action is included, concat actions to node_attr
     
     if !t_gnn.ignore_action

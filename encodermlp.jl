@@ -1,8 +1,4 @@
-using Knet;
-
-include("layernorm.jl")
-
-struct EncoderMLP
+mutable struct EncoderMLP
     
     weights
     biases
@@ -25,12 +21,13 @@ end
 function (e_mlp::EncoderMLP)(x)
     
     dims = size(x)
-    x0 = reshape(x, dims[1]*dims[2], dims[3]*dims[4])
+    x0 = reshape(x, dims[1]*dims[2], dims[3],dims[4])
+    x0 = reshape(x0, dims[1]*dims[2],:)
     x1 = e_mlp.act_fn.(e_mlp.weights[1] * x0 .+ e_mlp.biases[1])
     x2 = e_mlp.weights[2]* x1 .+ e_mlp.biases[2]
     x3 = e_mlp.act_fn.(e_mlp.layer_norm(x2))
-    x4 = e_mlp.act_fn.(e_mlp.weights[3]*x3 .+ e_mlp.biases[3])
-    x5 = reshape(x4, 2, dims[3],dims[4])
+    x4 = e_mlp.weights[3]*x3 .+ e_mlp.biases[3]
+    x5 = reshape(x4, 2,:,dims[4])
     
     return x5
     

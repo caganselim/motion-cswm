@@ -66,22 +66,6 @@ function (m::ContrastiveSWM)(obs,action)
     
 end
 
-# Forward propagation with transition
-function (m::ContrastiveSWM)(obs,action)
-    
-    # Extract objects
-    objs = m.obj_extractor(obs)
-    
-    # Obtain embeddings
-    state = m.obj_encoder(objs)
-    
-    #Transition    
-    out = m.gnn(state,action)
-    
-    return out
-    
-end
-
 # Forward propagation without transition
 function (m::ContrastiveSWM)(obs)
     
