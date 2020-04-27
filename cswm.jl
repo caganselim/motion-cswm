@@ -31,7 +31,7 @@ end
 
 mutable struct ContrastiveSWM
     
-    obj_extractor::EncoderCNNSmall
+    obj_extractor
     obj_encoder::EncoderMLP
     gnn::TransitionGNN
     sigma
@@ -39,10 +39,20 @@ mutable struct ContrastiveSWM
     
 end
 
-function initContrastiveSWMSmall(input_ch, hidden_dim, num_objects, embedding_dim, action_dim, sigma, hinge )
+function initContrastiveSWMSmall(input_ch, hidden_dim, num_objects, embedding_dim, action_dim, sigma, hinge)
 
     obj_extractor = initEncoderCNNSmall(input_ch, hidden_dim ÷ 16, num_objects, sigm, relu)
     obj_encoder = initEncoderMLP(25, hidden_dim, embedding_dim, num_objects, relu)
+    gnn = initTransitionGNN(embedding_dim, hidden_dim, action_dim, num_objects, false, false, relu)
+    
+    return ContrastiveSWM(obj_extractor, obj_encoder, gnn, sigma, hinge)
+    
+end
+
+function initContrastiveSWMLarge(input_ch, hidden_dim, num_objects, embedding_dim, action_dim, sigma,hinge)
+
+    obj_extractor = initEncoderCNNLarge(input_ch, hidden_dim, num_objects, sigm, relu)
+    obj_encoder = initEncoderMLP(2500, hidden_dim, embedding_dim, num_objects, relu)
     gnn = initTransitionGNN(embedding_dim, hidden_dim, action_dim, num_objects, false, false, relu)
     
     return ContrastiveSWM(obj_extractor, obj_encoder, gnn, sigma, hinge)
