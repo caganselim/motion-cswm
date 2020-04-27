@@ -235,3 +235,91 @@ function iterate(p::PathDataset, state = 1)
     return ((obs, action, next_obs), state)
     
 end
+
+##################Multi Step Path Dataset##########################
+
+struct MultiStepPathDataset
+    
+    """
+    Create dataset of {(o_t, a_t)}_{t=1:N} paths from replay buffer.
+    """
+    experience_buffer
+    dataset_size
+    batch_size
+    step_size
+    
+end
+
+function buildMultiStepPathDataset(dataset_path, batch_size, step_size)
+    
+    
+    experience_buffer = loadh5file(dataset_path)
+    dataset_size = length(experience_buffer)
+    
+    return MultiStepPathDataset(experience_buffer, dataset_size, batch_size, step_size)
+    
+end
+
+function getitem(p::MultiStepPathDataset,idx)
+    
+    obs = p.experience_buffer[string(idx)]["obs"][:,:,:,1]
+    action = p.experience_buffer[string(idx)]["action"][1:p.step_size]
+    next_obs = p.experience_buffer[string(idx)]["next_obs"][:,:,:,p.step_size]
+
+    return obs, action, next_obs
+    
+end
+
+(p::MultiStepPathDataset)(idx) = getitem(p::MultiStepPathDataset,idx)
+
+function prepareBatch(p::MultiStepPathDataset, state)
+    """Lazy loader to GPU."""
+    
+    #Convert state to index
+    offset = (state - 1)*p.batch_size
+    
+    #Read 
+    b_obs = zeros(50,50,3,p.batch_size)
+    b_next_obs = zeros(50,50,3,p.batch_size)
+    b_action = zeros(p.batch_size, p.step_size)
+    
+    for i in 1:p.batch_size
+        
+        idx = i + offset
+        obs, action, next_obs = p(idx - 1)
+        
+        #Insert obs
+        b_obs[:,:,:,i] = obs
+        
+        #Assign action
+        b_action[i,:] = action .+ 1
+        
+        #Insert next_obs
+        b_next_obs[:,:,:,i] =  next_obs
+        
+    end
+    
+    return atype(b_obs), Integer.(b_action), atype(b_next_obs)
+    
+end
+
+
+function iterate(p::MultiStepPathDataset, state = 1)
+    
+    net_threshold = p.dataset_size ÷ p.batch_size
+
+    if state > net_threshold
+        
+        return nothing
+        
+    end  
+        
+    #Get evaluation batch
+    obs, action, next_obs = prepareBatch(p, state)
+    
+    state += 1
+    
+    
+    return ((obs, action, next_obs), state)
+    
+end

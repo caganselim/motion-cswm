@@ -59,7 +59,8 @@ function (m::ContrastiveSWM)(obs,action)
     state = m.obj_encoder(objs)
     
     #Transition    
-    out = m.gnn(state,action)
+    transition = m.gnn(state,action)    
+    out = transition + state
     
     return out
     

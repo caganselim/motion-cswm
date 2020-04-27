@@ -7,26 +7,12 @@ mutable struct EncoderMLP
 
 end
 
-mutable struct LayerNorm2; a; b; ϵ; end
-
-function LayerNorm2(dmodel; eps=1e-5)
-    a = param(dmodel; init=ones)
-    b = param(dmodel; init=zeros)
-    return LayerNorm(a, b, eps)
-end
-
-function (l::LayerNorm2)(x, o...)
-    μ = mean(x,dims=3)
-    #print("mean: ", size(μ))
-    σ = std(x,mean=μ,dims=3)
-    return l.a .* (x .- μ) ./ (σ .+ l.ϵ) .+ l.b                                                         
-end
 
 function initEncoderMLP(input_dim, hidden_dim, output_dim, num_objects, act_fn)
     
     weights = [param(hidden_dim,input_dim),param(hidden_dim, hidden_dim),param(output_dim,hidden_dim )]
     biases =  [param0(hidden_dim), param0(hidden_dim), param0(output_dim)]
-    layer_norm = LayerNorm2(hidden_dim)
+    layer_norm = LayerNorm(hidden_dim)
     
     return EncoderMLP(weights, biases, layer_norm, act_fn)
     
