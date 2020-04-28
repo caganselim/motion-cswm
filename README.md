@@ -12,8 +12,20 @@ C-SWM is a model for learning latent state representations from observations (im
 
 This model is trained and tested on 2D Shapes dataset. As the future work, it's representational power is analyzed on Moving MNIST dataset.
 
-Check the [data sheet](https://docs.google.com/spreadsheets/d/1wYI-_FWTBgDlxHX-uPAnNcHAzOcH0QJt4pPUsqMDhUY/edit#gid=0) for additional information.
+Check the [data sheet](https://docs.google.com/spreadsheets/d/1wYI-_FWTBgDlxHX-uPAnNcHAzOcH0QJt4pPUsqMDhUY/edit#gid=0) for additional information about training and testing.
 
 ## Usage
 
 To run the tests, generate the datasets via the original repository. Then, use the provided notebooks.
+
+### Reference
+
+```
+@article{kipf2019contrastive,
+  title={Contrastive Learning of Structured World Models}, 
+  author={Kipf, Thomas and van der Pol, Elise and Welling, Max}, 
+  journal={arXiv preprint arXiv:1911.12247}, 
+  year={2019} 
+}
+```
+
