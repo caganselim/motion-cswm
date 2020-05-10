@@ -1,6 +1,6 @@
 # C-SWM in Knet
 
-This is the repo for COMP 550 Deep Learning term project. This work consist of the replication of ICLR 2020 paper:
+This is the repo for COMP 541 Deep Learning term project. This work consist of the replication of ICLR 2020 paper:
 
 **Contrastive Learning of Structured World Models.**  
 Thomas Kipf, Elise van der Pol, Max Welling.  
