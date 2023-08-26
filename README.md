@@ -1,12 +1,12 @@
 # C-SWM in Knet
 
-This is the repo for COMP 541 Deep Learning term project. This work consist of the replication of ICLR 2020 paper:
+This is the repo for COMP 541 Deep Learning term project. This work consists of the replication of the ICLR 2020 paper:
 
 **Contrastive Learning of Structured World Models.**  
 Thomas Kipf, Elise van der Pol, Max Welling.  
 http://arxiv.org/abs/1911.12247
 
-and some experiments on the top of it.
+and some experiments on top of it with [Flying MNIST dataset](https://github.com/caganselim/flying_mnist); with simulated continuous action as object velocity. The results show that continuous action cue also works;  which is also noted in the limitations part in the paper.
 
 C-SWM is a model for learning latent state representations from observations (images) in an environment. Environment transitions are modeled via a graph neural network. Given an observation encoded by the model and action, the network can predict the latent representation of the next state.
 
